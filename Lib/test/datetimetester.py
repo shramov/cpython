@@ -551,34 +551,34 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
         eq(a/3600000, td(0, 0, 7*24*1000))
 
         # Multiplication by float
-        us = td(microseconds=1)
-        eq((3*us) * 0.5, 2*us)
-        eq((5*us) * 0.5, 2*us)
-        eq(0.5 * (3*us), 2*us)
-        eq(0.5 * (5*us), 2*us)
-        eq((-3*us) * 0.5, -2*us)
-        eq((-5*us) * 0.5, -2*us)
+        ns = td(nanoseconds=1)
+        eq((3*ns) * 0.5, 2*ns)
+        eq((5*ns) * 0.5, 2*ns)
+        eq(0.5 * (3*ns), 2*ns)
+        eq(0.5 * (5*ns), 2*ns)
+        eq((-3*ns) * 0.5, -2*ns)
+        eq((-5*ns) * 0.5, -2*ns)
 
         # Issue #23521
         eq(td(seconds=1) * 0.123456, td(microseconds=123456))
-        eq(td(seconds=1) * 0.6112295, td(microseconds=611229))
+        eq(td(seconds=1) * 0.6112295, td(microseconds=611229.5))
 
         # Division by int and float
-        eq((3*us) / 2, 2*us)
-        eq((5*us) / 2, 2*us)
-        eq((-3*us) / 2.0, -2*us)
-        eq((-5*us) / 2.0, -2*us)
-        eq((3*us) / -2, -2*us)
-        eq((5*us) / -2, -2*us)
-        eq((3*us) / -2.0, -2*us)
-        eq((5*us) / -2.0, -2*us)
+        eq((3*ns) / 2, 2*ns)
+        eq((5*ns) / 2, 2*ns)
+        eq((-3*ns) / 2.0, -2*ns)
+        eq((-5*ns) / 2.0, -2*ns)
+        eq((3*ns) / -2, -2*ns)
+        eq((5*ns) / -2, -2*ns)
+        eq((3*ns) / -2.0, -2*ns)
+        eq((5*ns) / -2.0, -2*ns)
         for i in range(-10, 10):
-            eq((i*us/3)//us, round(i/3))
+            eq((i*ns/3)//ns, round(i/3))
         for i in range(-10, 10):
-            eq((i*us/-3)//us, round(i/-3))
+            eq((i*ns/-3)//ns, round(i/-3))
 
         # Issue #23521
-        eq(td(seconds=1) / (1 / 0.6112295), td(microseconds=611229))
+        eq(td(seconds=1) / (1 / 0.6112295), td(microseconds=611229.5))
 
         # Issue #11576
         eq(td(999999999, 86399, 999999) - td(999999999, 86399, 999998),
@@ -772,8 +772,8 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
         self.assertIsInstance(timedelta.resolution, timedelta)
         self.assertTrue(timedelta.max > timedelta.min)
         self.assertEqual(timedelta.min, timedelta(-999999999))
-        self.assertEqual(timedelta.max, timedelta(999999999, 24*3600-1, 1e6-1))
-        self.assertEqual(timedelta.resolution, timedelta(0, 0, 1))
+        self.assertEqual(timedelta.max, timedelta(999999999, 24*3600-1, nanoseconds=1e9-1))
+        self.assertEqual(timedelta.resolution, timedelta(0, 0, nanoseconds=1))
 
     def test_overflow(self):
         tiny = timedelta.resolution
@@ -808,33 +808,33 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
         eq = self.assertEqual
 
         # Single-field rounding.
-        eq(td(milliseconds=0.4/1000), td(0))    # rounds to 0
-        eq(td(milliseconds=-0.4/1000), td(0))    # rounds to 0
-        eq(td(milliseconds=0.5/1000), td(microseconds=0))
-        eq(td(milliseconds=-0.5/1000), td(microseconds=-0))
-        eq(td(milliseconds=0.6/1000), td(microseconds=1))
-        eq(td(milliseconds=-0.6/1000), td(microseconds=-1))
-        eq(td(milliseconds=1.5/1000), td(microseconds=2))
-        eq(td(milliseconds=-1.5/1000), td(microseconds=-2))
-        eq(td(seconds=0.5/10**6), td(microseconds=0))
-        eq(td(seconds=-0.5/10**6), td(microseconds=-0))
-        eq(td(seconds=1/2**7), td(microseconds=7812))
-        eq(td(seconds=-1/2**7), td(microseconds=-7812))
+        eq(td(milliseconds=0.4/1000000), td(0))    # rounds to 0
+        eq(td(milliseconds=-0.4/1000000), td(0))    # rounds to 0
+        eq(td(milliseconds=0.5/1000000), td(nanoseconds=0))
+        eq(td(milliseconds=-0.5/1000000), td(nanoseconds=-0))
+        eq(td(milliseconds=0.6/1000000), td(nanoseconds=1))
+        eq(td(milliseconds=-0.6/1000000), td(nanoseconds=-1))
+        eq(td(milliseconds=1.5/1000000), td(nanoseconds=2))
+        eq(td(milliseconds=-1.5/1000000), td(nanoseconds=-2))
+        eq(td(seconds=0.5/10**9), td(nanoseconds=0))
+        eq(td(seconds=-0.5/10**9), td(nanoseconds=-0))
+        eq(td(milliseconds=1/2**7), td(nanoseconds=7812))
+        eq(td(milliseconds=-1/2**7), td(nanoseconds=-7812))
 
         # Rounding due to contributions from more than one field.
-        us_per_hour = 3600e6
-        us_per_day = us_per_hour * 24
-        eq(td(days=.4/us_per_day), td(0))
-        eq(td(hours=.2/us_per_hour), td(0))
-        eq(td(days=.4/us_per_day, hours=.2/us_per_hour), td(microseconds=1))
+        ns_per_hour = 3600e9
+        ns_per_day = ns_per_hour * 24
+        eq(td(days=.4/ns_per_day), td(0))
+        eq(td(hours=.2/ns_per_hour), td(0))
+        eq(td(days=.4/ns_per_day, hours=.2/ns_per_hour), td(nanoseconds=1))
 
-        eq(td(days=-.4/us_per_day), td(0))
-        eq(td(hours=-.2/us_per_hour), td(0))
-        eq(td(days=-.4/us_per_day, hours=-.2/us_per_hour), td(microseconds=-1))
+        eq(td(days=-.4/ns_per_day), td(0))
+        eq(td(hours=-.2/ns_per_hour), td(0))
+        eq(td(days=-.4/ns_per_day, hours=-.2/ns_per_hour), td(nanoseconds=-1))
 
         # Test for a patch in Issue 8860
-        eq(td(microseconds=0.5), 0.5*td(microseconds=1.0))
-        eq(td(microseconds=0.5)//td.resolution, 0.5*td.resolution//td.resolution)
+        eq(td(nanoseconds=0.5), 0.5*td(nanoseconds=1.0))
+        eq(td(nanoseconds=0.5)//td.resolution, 0.5*td.resolution//td.resolution)
 
     def test_massive_normalization(self):
         td = timedelta(microseconds=-1)
